@@ -75,12 +75,15 @@ The script automatically:
 - ✅ Configures reverse proxy
 - ✅ Installs SSL certificate (optional)
 
-**See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.**
+**Deployment guides:**
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Manual VPS setup (Ubuntu/Debian)
+- [PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md) - Plesk control panel setup
 
 ## 📖 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get running locally in 5 minutes
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete VPS deployment guide
+- **[PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md)** - Plesk hosting deployment guide
 - **[README.md](README.md)** - Full technical documentation
 
 ## 🏗️ Tech Stack
