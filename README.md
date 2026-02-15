@@ -77,13 +77,15 @@ The script automatically:
 
 **Deployment guides:**
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Manual VPS setup (Ubuntu/Debian)
-- [PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md) - Plesk control panel setup
+- [PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md) - Plesk with PostgreSQL
+- [PLESK-MARIADB-DEPLOYMENT.md](PLESK-MARIADB-DEPLOYMENT.md) - Plesk with MariaDB/MySQL
 
 ## 📖 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get running locally in 5 minutes
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete VPS deployment guide
-- **[PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md)** - Plesk hosting deployment guide
+- **[PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md)** - Plesk with PostgreSQL
+- **[PLESK-MARIADB-DEPLOYMENT.md](PLESK-MARIADB-DEPLOYMENT.md)** - Plesk with MariaDB/MySQL
 - **[README.md](README.md)** - Full technical documentation
 
 ## 🏗️ Tech Stack
