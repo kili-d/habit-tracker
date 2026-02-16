@@ -149,14 +149,7 @@ If you have any questions or run into issues:
 2. Review the troubleshooting sections
 3. Open an issue on GitHub
 
-## 💰 Hosting Costs
 
-Estimated monthly costs for VPS deployment:
-- **VPS**: $5-10/month (DigitalOcean, Linode, etc.)
-- **Domain**: $10-15/year
-- **SSL**: FREE (Let's Encrypt)
-
-**Total: ~$6-11/month**
 
 ## 🎯 Roadmap
 
