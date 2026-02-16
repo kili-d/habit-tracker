@@ -196,27 +196,32 @@ You should see:
 - Verify database exists: `mysql -u habituser -p habit_tracker`
 - Check MariaDB is running: Plesk → **Services**
 
-### Step 9: Configure Reverse Proxy
+### Step 9: Configure Reverse Proxy (Critical)
+
+This is the most important step. By default, Plesk routes all traffic through Apache. Your Node.js backend runs on port 3000, but Nginx doesn't know about it. Without this configuration, your frontend will load but all API calls will return 500 errors.
 
 1. Go to **Apache & nginx Settings** for your domain
 
 2. In **Additional nginx directives**, add:
-
-   ```nginx
-   location / {
-       proxy_pass http://localhost:3000;
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection 'upgrade';
+```nginx
+   location /api/ {
+       proxy_pass http://127.0.0.1:3000;
        proxy_set_header Host $host;
        proxy_set_header X-Real-IP $remote_addr;
        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
        proxy_set_header X-Forwarded-Proto $scheme;
-       proxy_cache_bypass $http_upgrade;
    }
-   ```
+```
 
 3. Click **OK**
+
+**What this does:** Nginx serves the static frontend files directly (fast), but forwards any `/api/` requests to the Node.js backend on port 3000. Without this, the browser receives 500 errors on every API call because Apache has no knowledge of the Node.js process.
+
+**How to verify:**
+```bash
+curl -s https://your-domain.com/api/health
+```
+You should see: `{"status":"ok","timestamp":"..."}`
 
 ### Step 10: Start Application
 
@@ -315,200 +320,114 @@ cd backend && npm install
 
 ## 🐛 Troubleshooting
 
-### Application Won't Start
+### Common Deployment Issues (Lessons Learned)
 
-**Check database connection:**
+The following issues were encountered during real-world deployment and are documented here to save time.
+
+#### 1. API returns 500 errors but frontend loads fine
+
+**Symptom:** The app UI loads correctly, but checking habits doesn't persist. Browser console shows `HTTP error! status: 500` on all `/api/` calls.
+
+**Cause:** Plesk's Nginx proxies all traffic to Apache (typically port 7081 or 8880), which serves static files but has no knowledge of the Node.js backend on port 3000.
+
+**Fix:** Add the `/api/` proxy directive in Plesk → Apache & nginx Settings → Additional nginx directives (see Step 9).
+
+**How to diagnose:**
 ```bash
-mysql -u habituser -p habit_tracker
+# If this works, the backend is fine — the problem is Nginx routing
+curl -s http://localhost:3000/api/health
+
+# If this returns 500, Nginx isn't forwarding to Node.js
+curl -s https://your-domain.com/api/health
 ```
 
-**Check .env file:**
-- Verify `DB_PORT=3306` (not 5432!)
-- Check database password
-- Ensure using MariaDB files (not PostgreSQL)
+#### 2. Cannot find module 'node:buffer' or similar node: errors
 
-**View logs:**
-1. **Node.js** → **Log Files** → View `stderr.log`
+**Symptom:** Node.js crashes on startup with errors about missing `node:buffer`, `node:events`, or other `node:` prefixed modules.
 
-### "Cannot find module 'mysql2'"
+**Cause:** The server is running Node.js v12 or v14. The `mysql2` package requires Node.js 16+.
 
-**Solution:** Run npm install again
+**Fix:**
 ```bash
-cd /var/www/vhosts/your-domain.com/httpdocs/backend
+node -v
+
+# Upgrade to Node.js 18 or higher
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+
+# If you get package conflicts with libnode-dev:
+apt-get remove -y libnode-dev
+apt-get install -y nodejs
+```
+
+After upgrading, reinstall dependencies:
+```bash
+rm -rf node_modules
 npm install
 ```
 
-### Database Connection Failed
+#### 3. Cannot find module 'express'
 
-**Check credentials:**
+**Symptom:** Node.js crashes with MODULE_NOT_FOUND for express, mysql2, or other packages.
+
+**Cause:** Dependencies were not installed after cloning or pulling updates.
+
+**Fix:**
 ```bash
-mysql -u habituser -p
-# Enter password
-USE habit_tracker;
-SHOW TABLES;
+cd backend && npm install
 ```
 
-**Grant permissions if needed:**
+#### 4. Access denied for user 'root'@'localhost'
+
+**Symptom:** Node.js starts but crashes with a database access denied error.
+
+**Cause:** The `.env` file has incorrect credentials (e.g., default `root` with no password).
+
+**Fix:** Update `.env` with the correct database user and password.
+
+#### 5. Node.js process dies when SSH session closes
+
+**Symptom:** App works while connected via SSH, stops when you disconnect.
+
+**Cause:** Running `node server.js` directly ties the process to your terminal session.
+
+**Fix:** Use PM2:
 ```bash
-mysql -u root -p
-GRANT ALL PRIVILEGES ON habit_tracker.* TO 'habituser'@'localhost';
-FLUSH PRIVILEGES;
+npm install -g pm2
+pm2 start server.js --name habit-tracker
+pm2 save
+pm2 startup
 ```
 
-### 502 Bad Gateway
+#### 6. Data doesn't persist across browsers
 
-1. Check Node.js app is **Running**
-2. Verify reverse proxy configuration in nginx
-3. Check port 3000 in `.env`
+**Symptom:** Habits checked in one browser don't appear in another. Database table is empty.
 
-### Database Connection Issues
-
-**If you get connection errors:**
-
-1. Verify database credentials in `.env`
-2. Ensure MariaDB is running
-3. Check that the database exists:
+**Diagnosis checklist:**
 ```bash
-mysql -u habituser -p habit_tracker -e "SHOW TABLES;"
+# 1. Is the Node.js process running?
+ps aux | grep node
+
+# 2. Is the API reachable externally?
+curl -s https://your-domain.com/api/health
+
+# 3. Can the API write to the database?
+curl -s -X POST http://localhost:3000/api/data/test \
+  -H "Content-Type: application/json" \
+  -d '{"value":{"test":true}}'
+
+# 4. Is data in the database?
+mysql -u habituser -p habit_tracker -e "SELECT * FROM habit_data;"
 ```
 
----
-
-## 📊 Performance Tips
-
-### Enable Query Caching
-
-In phpMyAdmin, run:
-```sql
-SET GLOBAL query_cache_size = 1048576;
-SET GLOBAL query_cache_type = ON;
-```
-
-### Optimize Tables
-
-```sql
-OPTIMIZE TABLE habit_data;
-OPTIMIZE TABLE users;
-```
-
-### Monitor Performance
-
-1. **Statistics** → View resource usage
-2. **Database** → Check query performance
-3. Use **New Relic** or **Monitoring** extension (optional)
-
----
-
-## 🔒 Security Checklist
-
-- [ ] Strong database password
-- [ ] `.env` file has permissions `600`
-- [ ] SSL certificate installed
-- [ ] HTTPS forced
-- [ ] Firewall enabled
-- [ ] Regular backups scheduled
-- [ ] Keep Plesk updated
-
----
-
-## 📦 Backup Your Database
-
-### Automatic Backups (Recommended)
-
-1. Go to **Backup Manager**
-2. Click **Settings**
-3. Enable **Scheduled Backups**
-4. Set frequency (Daily recommended)
-5. Include databases
-
-### Manual Backup
-
-1. **Databases** → Click your database
-2. Click **Export Dump**
-3. Download SQL file
-
-### Command Line Backup
-
-```bash
-# Create backup directory
-mkdir -p ~/backups
-
-# Add to crontab (daily at 2 AM)
-crontab -e
-
-# Add this line:
-0 2 * * * mysqldump -u habituser -pYOUR_PASSWORD habit_tracker > ~/backups/habit_$(date +\%Y\%m\%d).sql
-```
-
----
-
-## 🆘 Getting Help
-
-### Check These First:
-
-1. **Logs:** Node.js → Log Files
-2. **Database Connection:** Test with mysql command
-3. **Verify MariaDB Setup:** Ensure using correct files
-
-### Still Having Issues?
-
-1. Review troubleshooting section above
-2. Check [GitHub Issues](https://github.com/kili-d/habit-tracker/issues)
-3. Verify all configuration steps were completed
+If step 2 fails but step 3 works → Nginx proxy issue (see #1 above).
 
 ### Common Mistakes:
 
+- ❌ Missing Nginx `/api/` proxy directive (most common cause of 500 errors)
+- ❌ Node.js version too old (need 18+)
 - ❌ Wrong port in `.env` (should be 3306)
 - ❌ Missing `npm install` after git pull
 - ❌ Database user lacks privileges
 - ❌ Forgot to run `npm run init-db`
-
----
-
-## 🎯 Quick Reference
-
-### Important Files
-```
-backend/database.js     → MariaDB connection & queries
-backend/package.json    → Dependencies (includes mysql2)
-backend/.env.example    → Template for configuration
-backend/.env            → Your actual credentials (create this)
-```
-
-### Configuration
-```
-Database Port: 3306
-Server Port: 3000 (configurable in .env)
-```
-
-### Verify Setup
-```bash
-# Check dependencies installed
-cd backend && npm list mysql2
-
-# Check database connection
-mysql -u habituser -p habit_tracker -e "SHOW TABLES;"
-
-# Test API health
-curl https://habits.yourdomain.com/api/health
-```
-
----
-
-## 🎉 You're Done!
-
-Your Daily Practice Habit Tracker is now running on Plesk with MariaDB!
-
-**Access your app:** `https://habits.yourdomain.com`
-
-**Key Features:**
-- ✅ MariaDB database for persistent storage
-- ✅ SSL/HTTPS enabled
-- ✅ Data persists across browsers and devices
-- ✅ Production-ready deployment
-
----
-
-**Happy tracking! 🎯**
-
-*Vince te ipsum* - Conquer yourself
+- ❌ Running `node server.js` directly instead of using PM2
