@@ -80,8 +80,13 @@ async function getData(key, userId = 1) {
       'SELECT data_value FROM habit_data WHERE user_id = ? AND data_key = ?',
       [userId, key]
     );
-    // mysql2 automatically parses JSON columns
-    return rows.length > 0 ? rows[0].data_value : null;
+
+    if (rows.length === 0) return null;
+
+    const value = rows[0].data_value;
+    // mysql2 may return JSON columns as strings or parsed objects depending on version/config
+    // Ensure we always return a parsed object
+    return typeof value === 'string' ? JSON.parse(value) : value;
   } catch (error) {
     console.error(`Error getting data for key "${key}":`, error.message);
     throw error;
@@ -91,17 +96,21 @@ async function getData(key, userId = 1) {
 // Set data by key
 async function setData(key, value, userId = 1) {
   try {
-    // mysql2 automatically handles JSON serialization for JSON columns
-    // Do NOT use JSON.stringify() - it causes double-encoding
+    // Explicitly stringify for MySQL JSON column compatibility
+    // mysql2 may not auto-stringify objects in all cases
+    const jsonValue = typeof value === 'string' ? value : JSON.stringify(value);
+
     await pool.query(
       `INSERT INTO habit_data (user_id, data_key, data_value, updated_at)
        VALUES (?, ?, ?, NOW())
        ON DUPLICATE KEY UPDATE data_value = ?, updated_at = NOW()`,
-      [userId, key, value, value]
+      [userId, key, jsonValue, jsonValue]
     );
     return { success: true };
   } catch (error) {
-    console.error('Error setting data:', error);
+    console.error(`Error setting data for key "${key}":`, error.message);
+    console.error('Value type:', typeof value);
+    console.error('Value:', JSON.stringify(value).substring(0, 200));
     throw error;
   }
 }
@@ -115,7 +124,9 @@ async function getAllData(userId = 1) {
     );
     const data = {};
     rows.forEach(row => {
-      data[row.data_key] = row.data_value;
+      const value = row.data_value;
+      // Ensure consistent object return (handle both string and object from mysql2)
+      data[row.data_key] = typeof value === 'string' ? JSON.parse(value) : value;
     });
     return data;
   } catch (error) {
