@@ -2,14 +2,16 @@
 
 Get your habit tracker running in 5 minutes!
 
-## ✅ You Have PostgreSQL Installed
-Version: PostgreSQL 14.19 (Homebrew)
+## Prerequisites
+
+- Node.js (v16 or higher)
+- MariaDB or MySQL installed locally
 
 ## 🚀 Steps to Run
 
 ### 1. Create Database
 ```bash
-psql postgres -c "CREATE DATABASE habit_tracker;"
+mysql -u root -p -e "CREATE DATABASE habit_tracker;"
 ```
 
 ### 2. Setup Backend
@@ -19,18 +21,22 @@ npm install
 cp .env.example .env
 ```
 
-### 3. Edit Configuration (Optional)
-The default settings should work. If you have a custom PostgreSQL setup, edit `backend/.env`:
+### 3. Edit Configuration
+Edit `backend/.env` with your MariaDB credentials:
 ```bash
 nano .env
 ```
 
-Default credentials:
-- User: `postgres`
-- Password: `postgres` (or empty on macOS Homebrew install)
-- Host: `localhost`
-- Port: `5432`
-- Database: `habit_tracker`
+Configuration:
+```env
+DB_USER=root
+DB_HOST=localhost
+DB_NAME=habit_tracker
+DB_PASSWORD=your_password
+DB_PORT=3306
+PORT=3000
+NODE_ENV=development
+```
 
 ### 4. Initialize Database
 ```bash
@@ -39,7 +45,7 @@ npm run init-db
 
 You should see:
 ```
-✅ Connected to PostgreSQL database
+✅ Connected to MariaDB database
 ✅ Database schema initialized successfully
 ✅ Database initialization complete!
 ```
@@ -61,7 +67,7 @@ Open your browser to: **http://localhost:3000**
 
 ## 🎉 That's It!
 
-Your habit tracker is now running with PostgreSQL backend!
+Your habit tracker is now running with MariaDB backend!
 
 All your data is stored in the database and will persist across server restarts.
 
@@ -69,21 +75,18 @@ All your data is stored in the database and will persist across server restarts.
 
 ### Can't connect to database?
 
-**If using Homebrew PostgreSQL, try:**
+**Check if MariaDB is running:**
 ```bash
-# Start PostgreSQL service
-brew services start postgresql@14
+# On macOS with Homebrew
+brew services start mariadb
 
-# Or check if it's running
-brew services list
+# On Linux
+sudo systemctl start mariadb
 ```
 
-**If you get "password authentication failed":**
-Edit `backend/.env` and set:
-```
-DB_PASSWORD=
-```
-(empty password for Homebrew installations)
+**If you get "access denied":**
+- Make sure your `.env` file has the correct password
+- Try connecting manually: `mysql -u root -p`
 
 ### Port 3000 already in use?
 
@@ -92,38 +95,28 @@ Change the port in `backend/.env`:
 PORT=3001
 ```
 
-## 🔄 Migrate Data from Old Version
+### Tables not being created?
 
-If you have data in the localStorage version:
+Make sure you ran `npm run init-db` and saw the success messages.
 
-1. Open the old version (index.html) in your browser
-2. Open Developer Console (F12)
-3. Run this code:
-```javascript
-const data = {};
-for (let i = 0; i < localStorage.length; i++) {
-  const key = localStorage.key(i);
-  if (key.startsWith('ht-')) {
-    data[key] = localStorage.getItem(key);
-  }
-}
-console.log(JSON.stringify(data, null, 2));
+To verify tables exist:
+```bash
+mysql -u root -p habit_tracker -e "SHOW TABLES;"
 ```
-4. Copy the output
-5. Open the new version (http://localhost:3000)
-6. Open Developer Console and run:
-```javascript
-const oldData = { /* paste your data here */ };
-for (const [key, value] of Object.entries(oldData)) {
-  await window.storage.set(key, value);
-}
-location.reload();
+
+You should see:
+```
++-------------------------+
+| Tables_in_habit_tracker |
++-------------------------+
+| habit_data              |
+| users                   |
++-------------------------+
 ```
 
 ## 📚 More Information
 
-See `README.md` for:
-- VPS deployment instructions
-- Docker deployment
-- Security considerations
-- Full API documentation
+See documentation for:
+- **[PLESK-DEPLOYMENT.md]** - Deploy to Plesk hosting
+- **[DEPLOYMENT.md]** - Manual VPS setup
+- **[README.md]** - Full technical documentation
