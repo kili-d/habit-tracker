@@ -1,19 +1,18 @@
 {
   "name": "daily-practice-habit-tracker",
   "version": "1.0.0",
-  "description": "Full-stack habit tracker with PostgreSQL backend",
+  "description": "Full-stack habit tracker with MariaDB backend",
   "main": "backend/server.js",
   "scripts": {
     "start": "cd backend && npm start",
     "dev": "cd backend && npm run dev",
     "init-db": "cd backend && npm run init-db",
-    "install-all": "cd backend && npm install",
-    "setup": "./scripts/setup.sh",
-    "deploy": "./scripts/deploy.sh"
+    "install-all": "cd backend && npm install"
   },
   "keywords": [
     "habit-tracker",
-    "postgresql",
+    "mariadb",
+    "mysql",
     "express",
     "react"
   ],

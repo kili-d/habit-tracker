@@ -2,12 +2,12 @@
 
 > *Vince te ipsum* - Conquer yourself
 
-A beautiful, full-stack habit tracking application with PostgreSQL backend. Track your daily habits, view weekly progress, and maintain streaks with a clean, intuitive interface.
+A beautiful, full-stack habit tracking application with MariaDB backend. Track your daily habits, view weekly progress, and maintain streaks with a clean, intuitive interface.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
-![PostgreSQL](https://img.shields.io/badge/postgresql-15-blue)
+![MariaDB](https://img.shields.io/badge/mariadb-10.5+-blue)
 
 ## ✨ Features
 
@@ -16,8 +16,8 @@ A beautiful, full-stack habit tracking application with PostgreSQL backend. Trac
 - 📝 **Notes** - Add detailed notes to any habit completion
 - 🌓 **Dark Mode** - Beautiful light and dark themes
 - 📱 **Responsive** - Mobile and desktop layouts
-- 💾 **PostgreSQL Backend** - Production-ready database storage
-- 🚀 **VPS Ready** - Easy deployment to any VPS
+- 💾 **MariaDB Backend** - Production-ready database storage
+- 🚀 **Plesk Ready** - Easy deployment to Plesk hosting
 - 📈 **Progress Tracking** - Visual progress bars and statistics
 
 ## 🚀 Quick Start
@@ -25,17 +25,17 @@ A beautiful, full-stack habit tracking application with PostgreSQL backend. Trac
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
+- MariaDB (v10.5 or higher) or MySQL (v8.0 or higher)
 
 ### Local Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/daily-practice-habit-tracker.git
-cd daily-practice-habit-tracker
+git clone https://github.com/kili-d/habit-tracker.git
+cd habit-tracker/habit-tracker-db
 
 # Create database
-psql postgres -c "CREATE DATABASE habit_tracker;"
+mysql -u root -p -e "CREATE DATABASE habit_tracker;"
 
 # Install dependencies
 cd backend
@@ -54,38 +54,17 @@ npm run dev
 
 Open http://localhost:3000
 
-## 🌐 VPS Deployment
-
-Deploy to your VPS in minutes with our automated script!
-
-### One-Command Deploy
-
-```bash
-# On your VPS
-git clone https://github.com/YOUR_USERNAME/daily-practice-habit-tracker.git
-cd daily-practice-habit-tracker
-chmod +x scripts/vps-setup.sh
-./scripts/vps-setup.sh
-```
-
-The script automatically:
-- ✅ Installs PostgreSQL, Node.js, PM2, and Nginx
-- ✅ Creates and configures database
-- ✅ Sets up the application
-- ✅ Configures reverse proxy
-- ✅ Installs SSL certificate (optional)
+## 🌐 Deployment
 
 **Deployment guides:**
+- [PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md) - Deploy to Plesk with MariaDB
 - [DEPLOYMENT.md](DEPLOYMENT.md) - Manual VPS setup (Ubuntu/Debian)
-- [PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md) - Plesk with PostgreSQL
-- [PLESK-MARIADB-DEPLOYMENT.md](PLESK-MARIADB-DEPLOYMENT.md) - Plesk with MariaDB/MySQL
 
 ## 📖 Documentation
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Get running locally in 5 minutes
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Complete VPS deployment guide
-- **[PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md)** - Plesk with PostgreSQL
-- **[PLESK-MARIADB-DEPLOYMENT.md](PLESK-MARIADB-DEPLOYMENT.md)** - Plesk with MariaDB/MySQL
+- **[PLESK-DEPLOYMENT.md](PLESK-DEPLOYMENT.md)** - Deploy to Plesk with MariaDB
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Manual VPS deployment guide
 - **[README.md](README.md)** - Full technical documentation
 
 ## 🏗️ Tech Stack
@@ -98,7 +77,7 @@ The script automatically:
 **Backend:**
 - Node.js
 - Express.js
-- PostgreSQL
+- MariaDB/MySQL
 - RESTful API
 
 **Deployment:**
@@ -112,14 +91,13 @@ The script automatically:
 .
 ├── backend/
 │   ├── server.js          # Express API server
-│   ├── database.js        # PostgreSQL connection & queries
+│   ├── database.js        # MariaDB connection & queries
 │   ├── init-db.js         # Database initialization
 │   └── package.json       # Backend dependencies
 ├── frontend/
 │   └── index.html         # React application
-├── scripts/
-│   └── vps-setup.sh       # Automated VPS setup
-├── DEPLOYMENT.md          # Deployment guide
+├── PLESK-DEPLOYMENT.md    # Plesk deployment guide
+├── DEPLOYMENT.md          # VPS deployment guide
 ├── QUICKSTART.md          # Quick start guide
 └── README.md              # Technical documentation
 ```
@@ -138,7 +116,7 @@ Organize habits into categories and customize your experience.
 ## 🔒 Security
 
 - Environment variables for sensitive data
-- PostgreSQL with user authentication
+- MariaDB with user authentication
 - HTTPS/SSL support
 - No sensitive data in repository
 - Regular security updates recommended

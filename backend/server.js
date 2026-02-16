@@ -42,8 +42,9 @@ app.get('/api/data/:key', async (req, res) => {
 
     res.json({ value });
   } catch (error) {
-    console.error('Error getting data:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(`[ERROR] GET /api/data/${req.params.key}:`, error.message);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 });
 
@@ -60,8 +61,9 @@ app.post('/api/data/:key', async (req, res) => {
     await setData(key, value);
     res.json({ success: true, key });
   } catch (error) {
-    console.error('Error setting data:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error(`[ERROR] POST /api/data/${req.params.key}:`, error.message);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 });
 

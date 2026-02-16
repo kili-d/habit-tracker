@@ -291,19 +291,21 @@
 
       useEffect(() => {
         (async () => {
-          try { const r = await window.storage.get("ht-habits"); if (r) setHabits(JSON.parse(r.value)); } catch {}
-          try { const r = await window.storage.get("ht-categories"); if (r) setCategories(JSON.parse(r.value)); } catch {}
-          try { const r = await window.storage.get("ht-logs"); if (r) setLogs(JSON.parse(r.value)); } catch {}
-          try { const r = await window.storage.get("ht-notes"); if (r) setNotes(JSON.parse(r.value)); } catch {}
-          try { const r = await window.storage.get("ht-weeknotes"); if (r) setWeekNotes(JSON.parse(r.value)); } catch {}
-          try { const r = await window.storage.get("ht-checklists"); if (r) setChecklists(JSON.parse(r.value)); } catch {}
+          // Note: mysql2 automatically parses JSON columns, so r.value is already an object
+          try { const r = await window.storage.get("ht-habits"); if (r) setHabits(r.value); } catch {}
+          try { const r = await window.storage.get("ht-categories"); if (r) setCategories(r.value); } catch {}
+          try { const r = await window.storage.get("ht-logs"); if (r) setLogs(r.value); } catch {}
+          try { const r = await window.storage.get("ht-notes"); if (r) setNotes(r.value); } catch {}
+          try { const r = await window.storage.get("ht-weeknotes"); if (r) setWeekNotes(r.value); } catch {}
+          try { const r = await window.storage.get("ht-checklists"); if (r) setChecklists(r.value); } catch {}
           try { const r = await window.storage.get("ht-theme"); if (r) setTheme(r.value); } catch {}
           setLoaded(true);
         })();
       }, []);
 
       const persist = useCallback(async (key, val, setter) => {
-        setter(val); try { await window.storage.set(key, JSON.stringify(val)); } catch {}
+        // mysql2 handles JSON serialization automatically, so send objects directly
+        setter(val); try { await window.storage.set(key, val); } catch {}
       }, []);
       const saveHabits = v => persist("ht-habits", v, setHabits);
       const saveCategories = v => persist("ht-categories", v, setCategories);
