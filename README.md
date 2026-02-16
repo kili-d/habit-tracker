@@ -2,6 +2,8 @@
 
 > *Vince te ipsum* - Conquer yourself
 
+<img width="2886" height="1878" alt="habit-tracker-darkmode" src="https://github.com/user-attachments/assets/3557c8e5-5fc8-49e4-8476-a1c5b9ab3cab" />
+
 A beautiful, full-stack habit tracking application with MariaDB backend. Track your daily habits, view weekly progress, and maintain streaks with a clean, intuitive interface.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
